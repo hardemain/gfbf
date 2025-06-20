@@ -54,15 +54,12 @@ function requireAuth(req, res, next) {
 }
 
 // API: Login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   console.log('🔑 Login attempt for:', username);
   
-  db.get('SELECT * FROM users WHERE name = ?', [username], (err, user) => {
-    if (err) {
-      console.error('💥 Database error:', err);
-      return res.status(500).json({ error: err.message });
-    }
+  try {
+    const user = await db.getUser(username);
     
     if (!user) {
       console.log('❌ User not found:', username);
@@ -72,34 +69,32 @@ app.post('/api/login', (req, res) => {
     console.log('👤 User found, checking password...');
     
     // Wachtwoord controleren
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (err) {
-        console.error('💥 Bcrypt error:', err);
-        return res.status(500).json({ error: 'Server fout' });
-      }
-      
-      if (!result) {
-        console.log('❌ Wrong password for user:', username);
-        return res.status(401).json({ error: 'Verkeerd wachtwoord' });
-      }
-      
-      // Token genereren en opslaan
-      const token = generateToken();
-      activeTokens.set(token, {
-        userId: user.id,
-        userName: user.name
-      });
-      
-      console.log('✅ Login successful! Token generated:', token);
-      console.log('🎯 Active tokens now:', Array.from(activeTokens.keys()));
-      
-      res.json({ 
-        success: true, 
-        token: token,
-        user: { id: user.id, name: user.name } 
-      });
+    const result = await bcrypt.compare(password, user.password);
+    
+    if (!result) {
+      console.log('❌ Wrong password for user:', username);
+      return res.status(401).json({ error: 'Verkeerd wachtwoord' });
+    }
+    
+    // Token genereren en opslaan
+    const token = generateToken();
+    activeTokens.set(token, {
+      userId: user.id,
+      userName: user.name
     });
-  });
+    
+    console.log('✅ Login successful! Token generated:', token);
+    console.log('🎯 Active tokens now:', Array.from(activeTokens.keys()));
+    
+    res.json({ 
+      success: true, 
+      token: token,
+      user: { id: user.id, name: user.name } 
+    });
+  } catch (error) {
+    console.error('💥 Login error:', error);
+    res.status(500).json({ error: 'Server fout' });
+  }
 });
 
 // API: Logout
@@ -135,29 +130,27 @@ app.get('/api/me', (req, res) => {
 });
 
 // API: Punten ophalen (alleen voor ingelogde gebruikers)
-app.get('/api/points', requireAuth, (req, res) => {
+app.get('/api/points', requireAuth, async (req, res) => {
   console.log('📊 API /points called by user:', req.userName);
   
-  // LET OP: Alleen id, name, points selecteren (GEEN password!)
-  db.all('SELECT id, name, points FROM users ORDER BY name', (err, rows) => {
-    if (err) {
-      console.error('💥 Database error:', err);
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const users = await db.getAllUsers();
     
     const response = {
-      users: rows,
+      users: users,
       currentUser: { id: req.userId, name: req.userName }
     };
     
     console.log('📦 Sending points response:', JSON.stringify(response, null, 2));
     res.json(response);
-  });
+  } catch (error) {
+    console.error('💥 Database error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // API: Punten aanpassen (alleen voor ingelogde gebruikers)
-app.post('/api/points/:userId', requireAuth, (req, res) => {
+app.post('/api/points/:userId', requireAuth, async (req, res) => {
   const targetUserId = parseInt(req.params.userId);
   const currentUserId = req.userId;
   const { change, reason } = req.body;
@@ -170,29 +163,22 @@ app.post('/api/points/:userId', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Je mag je eigen punten niet aanpassen! 😏' });
   }
   
-  // Update punten
-  db.run('UPDATE users SET points = points + ? WHERE id = ?', [change, targetUserId], function(err) {
-    if (err) {
-      console.error('💥 Database error:', err);
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    // Update punten
+    await db.updatePoints(targetUserId, change);
     
     // Geschiedenis opslaan
-    db.run('INSERT INTO point_history (user_id, points_changed, reason) VALUES (?, ?, ?)', 
-           [targetUserId, change, reason || 'Geen reden gegeven']);
+    await db.addHistory(targetUserId, change, reason || 'Geen reden gegeven');
     
-    // Nieuwe punten ophalen (alleen id, name, points)
-    db.get('SELECT id, name, points FROM users WHERE id = ?', [targetUserId], (err, row) => {
-      if (err) {
-        console.error('💥 Database error:', err);
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      console.log('✅ Points updated:', row);
-      res.json(row);
-    });
-  });
+    // Nieuwe punten ophalen
+    const updatedUser = await db.getUserById(targetUserId);
+    
+    console.log('✅ Points updated:', updatedUser);
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('💥 Database error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Hoofdpagina
@@ -201,5 +187,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🎯 GFBF Punten App draait op http://localhost:${port}`);
+  console.log(`🎯 GFBF Punten App draait op poort ${port}`);
 });
