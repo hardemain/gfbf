@@ -1,6 +1,6 @@
 const express = require('express');
 const session = require('express-session');
-const bcrypt = require('bcryptjs'); // was 'bcrypt'
+const bcrypt = require('bcrypt');
 const db = require('./database');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -171,7 +171,7 @@ app.post('/api/points/:userId', requireAuth, async (req, res) => {
     await db.addHistory(targetUserId, change, reason || 'Geen reden gegeven');
     
     // Nieuwe punten ophalen
-    const updatedUser = await db.getUserById(targetUserId);
+    const updatedUser = await db.getUserByIdPublic(targetUserId);
     
     console.log('✅ Points updated:', updatedUser);
     res.json(updatedUser);
@@ -181,7 +181,52 @@ app.post('/api/points/:userId', requireAuth, async (req, res) => {
   }
 });
 
-// Hoofdpagina
+// API: Wachtwoord veranderen
+app.post('/api/change-password', requireAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.userId;
+  
+  console.log('🔑 Password change request for user:', req.userName);
+  
+  try {
+    // Haal huidige gebruiker op
+    const user = await db.getUserById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    // Check huidige wachtwoord
+    const currentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    
+    if (!currentPasswordValid) {
+      console.log('❌ Wrong current password');
+      return res.status(401).json({ error: 'Huidig wachtwoord is incorrect' });
+    }
+    
+    // Valideer nieuw wachtwoord
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ error: 'Nieuw wachtwoord moet minimaal 4 tekens zijn' });
+    }
+    
+    // Hash nieuw wachtwoord
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update in database
+    await db.updatePassword(userId, hashedNewPassword);
+    
+    console.log('✅ Password changed successfully for user:', req.userName);
+    
+    res.json({ 
+      success: true, 
+      message: 'Wachtwoord succesvol gewijzigd!' 
+    });
+    
+  } catch (error) {
+    console.error('💥 Password change error:', error);
+    res.status(500).json({ error: 'Server fout bij wijzigen wachtwoord' });
+  }
+});
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });

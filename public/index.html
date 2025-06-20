@@ -229,6 +229,60 @@
             display: none;
         }
 
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .modal-buttons button[type="submit"] {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-buttons button[type="button"] {
+            background: #ddd;
+            color: #333;
+        }
+
         .login-info {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -292,10 +346,36 @@
             <div class="user-info">
                 <strong>Ingelogd als:</strong> <span id="current-user"></span>
                 <button class="logout-btn" onclick="logout()">Uitloggen</button>
+                <button class="logout-btn" onclick="showChangePasswordModal()" style="margin-left: 10px;">Wachtwoord wijzigen</button>
             </div>
             
             <div id="players-container">
                 <!-- Spelers worden hier geladen -->
+            </div>
+        </div>
+        
+        <!-- Wachtwoord wijzigen Modal -->
+        <div id="password-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Wachtwoord wijzigen</h3>
+                <form onsubmit="changePassword(event)">
+                    <div class="form-group">
+                        <label>Huidig wachtwoord:</label>
+                        <input type="password" id="current-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nieuw wachtwoord:</label>
+                        <input type="password" id="new-password" required minlength="4">
+                    </div>
+                    <div class="form-group">
+                        <label>Bevestig nieuw wachtwoord:</label>
+                        <input type="password" id="confirm-password" required minlength="4">
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" onclick="hideChangePasswordModal()">Annuleren</button>
+                        <button type="submit">Wijzigen</button>
+                    </div>
+                </form>
             </div>
         </div>
         
@@ -581,6 +661,68 @@
             }
 
             container.classList.remove('loading');
+        }
+
+        // Wachtwoord wijzigen modal functies
+        function showChangePasswordModal() {
+            document.getElementById('password-modal').classList.remove('hidden');
+            // Reset form
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+
+        function hideChangePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+        }
+
+        // Wachtwoord wijzigen
+        async function changePassword(event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Validatie
+            if (newPassword !== confirmPassword) {
+                showStatus('Nieuwe wachtwoorden komen niet overeen!', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 4) {
+                showStatus('Nieuw wachtwoord moet minimaal 4 tekens zijn!', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('gfbf_token');
+                
+                const response = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✅ Wachtwoord succesvol gewijzigd!', 'success');
+                    hideChangePasswordModal();
+                } else {
+                    showStatus(data.error || 'Fout bij wijzigen wachtwoord', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Password change error:', error);
+                showStatus('Fout bij wijzigen wachtwoord: ' + error.message, 'error');
+            }
         }
 
         // Status bericht tonen

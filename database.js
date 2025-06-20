@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const bcrypt = require('bcryptjs'); // was 'bcrypt'
+const bcrypt = require('bcrypt');
 
 // Database connectie
 const pool = new Pool({
@@ -66,8 +66,8 @@ const db = {
     return result.rows;
   },
 
-  // User ophalen by ID
-  async getUserById(id) {
+  // User ophalen by ID (voor punten updates - zonder password)
+  async getUserByIdPublic(id) {
     const result = await pool.query('SELECT id, name, points FROM users WHERE id = $1', [id]);
     return result.rows[0];
   },
@@ -80,6 +80,17 @@ const db = {
   // Geschiedenis toevoegen
   async addHistory(userId, change, reason) {
     await pool.query('INSERT INTO point_history (user_id, points_changed, reason) VALUES ($1, $2, $3)', [userId, change, reason]);
+  },
+
+  // Wachtwoord updaten
+  async updatePassword(userId, hashedPassword) {
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+  },
+
+  // We moeten ook getUserById uitbreiden om password mee te geven voor verificatie
+  async getUserById(id) {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    return result.rows[0];
   }
 };
 
