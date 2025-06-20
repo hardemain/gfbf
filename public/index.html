@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GFBF Punten 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .emoji {
+            font-size: 3em;
+            margin: 20px 0;
+        }
+
+        /* Login Form Styling */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Player Cards Styling */
+        .player-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .girlfriend-card {
+            border-color: #ff6b9d;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        }
+
+        .boyfriend-card {
+            border-color: #4dabf7;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .player-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .score {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #2d3436;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .btn-plus {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-plus:hover {
+            background: #00a085;
+            transform: scale(1.05);
+        }
+
+        .btn-minus {
+            background: #e17055;
+            color: white;
+        }
+
+        .btn-minus:hover {
+            background: #d63031;
+            transform: scale(1.05);
+        }
+
+        .btn:disabled {
+            background: #ddd;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .logout-btn {
+            background: #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #5f3dc4;
+        }
+
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .user-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .login-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .score {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GFBF Punten</h1>
+        <div class="emoji">💕</div>
+        
+        <!-- Login Scherm -->
+        <div id="login-screen">
+            <div class="login-info">
+                💡 <strong>Standaard wachtwoord:</strong> liefde123<br>
+                (Je kunt dit later veranderen)
+            </div>
+            
+            <form class="login-form" onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="username">Wie ben jij?</label>
+                    <select id="username" required>
+                        <option value="">Kies...</option>
+                        <option value="Girlfriend">Girlfriend 👩‍❤️‍👨</option>
+                        <option value="Boyfriend">Boyfriend 👨‍❤️‍👩</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Wachtwoord</label>
+                    <input type="password" id="password" required placeholder="Voer je wachtwoord in">
+                </div>
+                
+                <button type="submit" class="login-btn" id="login-btn">
+                    🔐 Inloggen
+                </button>
+            </form>
+        </div>
+        
+        <!-- Punten App (alleen zichtbaar na login) -->
+        <div id="app-screen" class="hidden">
+            <div class="user-info">
+                <strong>Ingelogd als:</strong> <span id="current-user"></span>
+                <button class="logout-btn" onclick="logout()">Uitloggen</button>
+            </div>
+            
+            <div id="players-container">
+                <!-- Spelers worden hier geladen -->
+            </div>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let authToken = null;
+        let players = [];
+
+        // App laden bij opstarten
+        window.onload = function() {
+            // Check of er een token in localStorage is opgeslagen
+            authToken = localStorage.getItem('gfbf_token');
+            checkLoginStatus();
+        };
+
+        // Punten laden van server - NIEUWE SIMPELE VERSIE
+        async function loadPointsNew() {
+            console.log('🚀 Starting loadPointsNew...');
+            
+            const token = localStorage.getItem('gfbf_token');
+            console.log('🔑 Token from localStorage:', token);
+            
+            if (!token) {
+                console.log('❌ No token found!');
+                showStatus('Geen login token beschikbaar', 'error');
+                return;
+            }
+            
+            const url = `/api/points?token=${token}`;
+            console.log('🌐 Fetching URL:', url);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📡 Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📦 Data received:', data);
+                    
+                    players = data.users;
+                    currentUser = data.currentUser;
+                    renderPlayers();
+                    console.log('🎯 Success! Players rendered.');
+                } else {
+                    console.log('❌ Response not OK:', response.status);
+                    const errorText = await response.text();
+                    console.log('❌ Error text:', errorText);
+                    showStatus(`Server fout: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                console.error('💥 Fetch error:', error);
+                showStatus('Fout bij laden van punten: ' + error.message, 'error');
+            }
+        }
+
+        // Check of gebruiker al ingelogd is
+        async function checkLoginStatus() {
+            console.log('🔍 Checking login status...');
+            
+            const token = localStorage.getItem('gfbf_token');
+            console.log('🔍 Token found in localStorage:', token);
+            
+            if (!token) {
+                console.log('❌ No token found, showing login screen');
+                showLoginScreen();
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                console.log('🔍 Login status response:', data);
+                
+                if (data.loggedIn) {
+                    console.log('✅ Already logged in, setting up app');
+                    authToken = token; // Zet authToken variabele
+                    currentUser = data.user;
+                    showAppScreen();
+                    // HIER was het probleem - loadPoints() werd aangeroepen zonder query parameter!
+                    console.log('🔄 About to call loadPointsNew from checkLoginStatus...');
+                    await loadPointsNew();
+                } else {
+                    console.log('❌ Token not valid, clearing and showing login');
+                    authToken = null;
+                    localStorage.removeItem('gfbf_token');
+                    showLoginScreen();
+                }
+            } catch (error) {
+                console.log('💥 Error checking login status:', error);
+                authToken = null;
+                localStorage.removeItem('gfbf_token');
+                showLoginScreen();
+            }
+        }
+
+        // Login functie
+        async function login(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = '🔄 Inloggen...';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data); // Debug log
+                
+                if (response.ok && data.success) {
+                    console.log('✅ Login successful!', data);
+                    
+                    // Token opslaan in BEIDE variabele en localStorage
+                    authToken = data.token;
+                    localStorage.setItem('gfbf_token', data.token);
+                    currentUser = data.user;
+                    
+                    console.log('💾 Token saved:', authToken);
+                    console.log('💾 localStorage token:', localStorage.getItem('gfbf_token'));
+                    
+                    showStatus(`Welkom ${currentUser.name}! 💕`, 'success');
+                    showAppScreen();
+                    
+                    // Kleine delay om zeker te zijn dat alles is opgeslagen
+                    setTimeout(async () => {
+                        console.log('🔄 About to load points...');
+                        console.log('🔍 Final token check before loadPoints:', authToken);
+                        await loadPointsNew();
+                        console.log('✅ Points loaded!');
+                    }, 100);
+                } else {
+                    console.log('❌ Login failed:', data);
+                    showStatus(data.error || 'Login mislukt', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error); // Debug log
+                showStatus('Fout bij inloggen: ' + error.message, 'error');
+            }
+            
+            loginBtn.disabled = false;
+            loginBtn.textContent = '🔐 Inloggen';
+        }
+
+        // Logout functie
+        async function logout() {
+            try {
+                if (authToken) {
+                    await fetch('/api/logout', { 
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                }
+                
+                authToken = null;
+                localStorage.removeItem('gfbf_token');
+                currentUser = null;
+                showLoginScreen();
+                showStatus('Uitgelogd! 👋', 'success');
+            } catch (error) {
+                showStatus('Fout bij uitloggen', 'error');
+            }
+        }
+
+        // Schermen tonen/verbergen
+        function showLoginScreen() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app-screen').classList.add('hidden');
+        }
+
+        function showAppScreen() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('current-user').textContent = currentUser.name;
+        }
+
+        // Punten laden van server
+        async function loadPoints() {
+            try {
+                const response = await fetch('/api/points');
+                
+                if (!response.ok) {
+                    throw new Error('Server fout');
+                }
+                
+                const data = await response.json();
+                
+                players = data.users;
+                currentUser = data.currentUser;
+                renderPlayers();
+            } catch (error) {
+                showStatus('Fout bij laden van punten: ' + error.message, 'error');
+            }
+        }
+
+        // Spelers weergeven
+        function renderPlayers() {
+            const container = document.getElementById('players-container');
+            container.innerHTML = '';
+
+            players.forEach(player => {
+                const cardClass = player.name === 'Girlfriend' ? 'girlfriend-card' : 'boyfriend-card';
+                const emoji = player.name === 'Girlfriend' ? '👩‍❤️‍👨' : '👨‍❤️‍👩';
+                
+                // Check of de knoppen enabled moeten zijn
+                const canEdit = player.id !== currentUser.id;
+                const buttonsHTML = canEdit ? 
+                    `<button class="btn btn-plus" onclick="changePoints(${player.id}, 1)">+1</button>
+                     <button class="btn btn-minus" onclick="changePoints(${player.id}, -1)">-1</button>` :
+                    `<button class="btn" disabled>+1</button>
+                     <button class="btn" disabled>-1</button>
+                     <div style="margin-top: 10px; font-size: 0.8em; color: #666;">
+                         Je eigen punten 😉
+                     </div>`;
+                
+                container.innerHTML += `
+                    <div class="player-card ${cardClass}">
+                        <div class="player-name">${player.name} ${emoji}</div>
+                        <div class="score" id="score-${player.id}">${player.points}</div>
+                        <div class="buttons">
+                            ${buttonsHTML}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Punten aanpassen
+        async function changePoints(userId, change) {
+            const container = document.getElementById('players-container');
+            container.classList.add('loading');
+
+            try {
+                const response = await fetch(`/api/points/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        change: change,
+                        reason: change > 0 ? 'Punt erbij!' : 'Punt eraf!' 
+                    })
+                });
+
+                if (response.ok) {
+                    const updatedPlayer = await response.json();
+                    // Update de score in de interface
+                    document.getElementById(`score-${userId}`).textContent = updatedPlayer.points;
+                    
+                    const action = change > 0 ? 'toegevoegd' : 'afgetrokken';
+                    showStatus(`Punt ${action}! 🎉`, 'success');
+                } else {
+                    const error = await response.json();
+                    showStatus(error.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Fout bij updaten van punten: ' + error.message, 'error');
+            }
+
+            container.classList.remove('loading');
+        }
+
+        // Status bericht tonen
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
